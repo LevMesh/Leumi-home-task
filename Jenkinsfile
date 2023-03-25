@@ -62,6 +62,8 @@ pipeline {
   post ('CleanWorkspace'){
     always {
       sh 'docker rm -f python-app'
+      sh "docker rmi levvv/python-app:latest"
+
       sh "docker rmi levvv/python-app:$env.VERSION"
       sh 'docker rmi $(docker images -f dangling=true -q)' /// deleting all "<none>" docker images.
       cleanWs() /// Cleaning the directory which managing all the CI process.
