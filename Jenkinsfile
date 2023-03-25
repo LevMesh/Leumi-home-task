@@ -10,7 +10,7 @@ pipeline {
 
         stage ('Stage 2 - Run & test the image') {
             steps {
-                sh "docker run -d -p 8070:5000 --name python-app levvv/python-app:latest"
+                sh "docker run -d -p 8070:5000 --name python-app --network=cowsay_1_jenkins-net levvv/python-app:latest"
                 sh 'wget --tries=10 --waitretry=5 --retry-connrefused -O- python-app:5000'
             }
         }
@@ -64,8 +64,8 @@ pipeline {
       sh 'docker rm -f python-app'
       sh "docker rmi levvv/python-app:latest"
 
-      sh "docker rmi levvv/python-app:$env.VERSION"
       sh 'docker rmi $(docker images -f dangling=true -q)' /// deleting all "<none>" docker images.
+      sh "docker rmi levvv/python-app:$env.VERSION"
       cleanWs() /// Cleaning the directory which managing all the CI process.
       
     }
