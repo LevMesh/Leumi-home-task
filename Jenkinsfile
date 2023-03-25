@@ -7,7 +7,6 @@ pipeline {
                 sh "docker build -t levvv/python-app:latest ."
             }
         }
-        
 
         stage ('Stage 2 - Run & test the image') {
             steps {
@@ -16,36 +15,29 @@ pipeline {
             }
         }
       
-        stage('Stage 3 - ') {
+        stage('Stage 3 - Calculate version') {
             steps {
-                script {
-                    if (env.BRANCH_NAME == 'main') {
-                        echo '-----------Hello from main branch--------------'  
-                        sc
-                    docker tag local-image:tagname new-repo:tagname
-                    docker push new-repo:tagname
-
-                ript {
-                            sh "git config --global user.email 'levmeshorer16@gmail.com'"
-                            sh "git config --global user.name 'Lev Meshorer (Local Docker Jenkins)'"
-                            sh "git fetch --tags"
-                            majorMinor = sh(script: "git tag -l --sort=v:refname | tail -1 | cut -c 1-3", returnStdout: true).trim()
-                            echo "$majorMinor"
-                            previousTag = sh(script: "git describe --tags --abbrev=0 | grep -E '^$majorMinor' || true", returnStdout: true).trim()  // x.y.z or empty string. grep is used to prevent returning a tag from another release branch; true is used to not fail the pipeline if grep returns nothing.
-                            echo "$previousTag"
-                            if (!previousTag) {
-                            patch = "0"
-                            } else {testingjava
-                            env.VERSION = majorMinor + "." + patch
-                            echo env.version
-                            echo env.BRANCH_NAME
-                        }
+                sript {
+                    sh "git config --global user.email 'levmeshorer16@gmail.com'"
+                    sh "git config --global user.name 'Lev Meshorer (Local Docker Jenkins)'"
+                    sh "git fetch --tags"
+                    majorMinor = sh(script: "git tag -l --sort=v:refname | tail -1 | cut -c 1-3", returnStdout: true).trim()
+                    echo "$majorMinor"
+                    previousTag = sh(script: "git describe --tags --abbrev=0 | grep -E '^$majorMinor' || true", returnStdout: true).trim()  // x.y.z or empty string. grep is used to prevent returning a tag from another release branch; true is used to not fail the pipeline if grep returns nothing.
+                    echo "$previousTag"
+                    if (!previousTag) {
+                    patch = "0"
+                    } else {testingjava
+                    env.VERSION = majorMinor + "." + patch
+                    echo env.version
+                    echo env.BRANCH_NAME
+                    
                     }
                 }
             }
         }
 
-        stage ('Stage 3 - Publish to DockerHub') {
+        stage ('Stage 4 - Publish to DockerHub') {
             steps {
                 sh "docker tag levvv/python-app:latest levvv/python-app:$env.VERSION"
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-account', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
@@ -60,9 +52,7 @@ pipeline {
         stage ('Stage 4 - Entering the production server') {
             steps {
                 
-            
-                println "Testing"
-
+                println "I'm here"
                 
             }
         }
@@ -77,6 +67,7 @@ pipeline {
       cleanWs() /// Cleaning the directory which managing all the CI process.
       
     }
-  }
 }
+}
+
 
