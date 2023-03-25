@@ -17,9 +17,9 @@ pipeline {
       
         stage('Stage 3 - Calculate version') {
             steps {
-                sript {
+                script {
                     sh "git config --global user.email 'levmeshorer16@gmail.com'"
-                    sh "git config --global user.name 'Lev Meshorer (Local Docker Jenkins)'"
+                    sh "git config --global user.name 'Lev Meshorer (Docker Jenkins)'"
                     sh "git fetch --tags"
                     majorMinor = sh(script: "git tag -l --sort=v:refname | tail -1 | cut -c 1-3", returnStdout: true).trim()
                     echo "$majorMinor"
@@ -27,12 +27,12 @@ pipeline {
                     echo "$previousTag"
                     if (!previousTag) {
                     patch = "0"
-                    } else {testingjava
+                    } else {
+                    patch = (previousTag.tokenize(".")[2].toInteger() + 1).toString()
+                    }
                     env.VERSION = majorMinor + "." + patch
                     echo env.version
                     echo env.BRANCH_NAME
-                    
-                    }
                 }
             }
         }
