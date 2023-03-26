@@ -3,13 +3,13 @@
 variable "aws_region" {
     description     = "Desired aws region"
     type            = string
-    default         = "us-east-2"
+    default         = "us-east-1"
 }
 
 variable "ami_type" {
     description     = "Type of image"
     type            = string
-    default         = "ami-00eeedc4036573771"
+    default         = "ami-0557a15b87f6559cf"
 }
 
 
@@ -32,7 +32,7 @@ variable "additional_tags" {
 
   default               = {
     "created_by"        = "Lev Meshorer"
-    "creation_date"     = "22.03.2023"
+    "creation_date"     = "26.03.2023"
     "deployed_with"     = "Terraform"
   }
 

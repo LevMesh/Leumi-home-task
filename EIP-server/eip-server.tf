@@ -18,7 +18,7 @@ resource "aws_instance" "eip-server" {
   
   ami                   = var.ami_type
   instance_type         = var.instance_type
-  key_name              = "leumi"
+  key_name              = "leumi1"
   user_data             = "${file("installations.sh")}"
   security_groups = [aws_security_group.eip-sg.id]
   subnet_id = aws_subnet.eip-sub.id
@@ -49,13 +49,11 @@ resource "aws_security_group" "eip-sg" {
     }
 
     # ingress {
-    #   description      = "Allow ssh"
-    #   from_port        = 22
-    #   to_port          = 22
-    #   protocol         = "TCP"
-    #   cidr_blocks = ["0.0.0.0/0"]
-    # #   cidr_blocks = ["<my_private_ip>/32"]
-    #   ipv6_cidr_blocks = ["::/0"]
+    #     description      = "Allow port 3000 from loadbalancer security-group"
+    #     from_port        = 80
+    #     to_port          = 80
+    #     protocol         = "TCP"
+    #     security_groups = [ aws_security_group.lb-sg.id ]
     # }
 
     egress {
@@ -63,6 +61,33 @@ resource "aws_security_group" "eip-sg" {
       to_port     = 0
       protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
+    }
+
+}
+
+
+
+# Define Load-Balancer security group
+resource "aws_security_group" "lb-sg" {
+    name        = "app_lb_sg"
+    description = "Aws sg for load balancer instances"
+    vpc_id      = aws_vpc.eip-vpc.id
+
+    ingress {
+        description      = "http from vpc"
+        from_port        = 80
+        to_port          = 80
+        protocol         = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+        ipv6_cidr_blocks = ["::/0"]
+    }
+
+    egress {
+        from_port        = 0
+        to_port          = 0
+        protocol         = "-1"
+        cidr_blocks      = ["0.0.0.0/0"]
+        ipv6_cidr_blocks = ["::/0"]
     }
 
 }
@@ -126,29 +151,83 @@ resource "aws_eip_association" "demo-eip-association" {
 
 
 
+resource "aws_elb" "lev-alb" {
+    name               = "lev-alb"
+    subnets = [aws_subnet.eip-sub.id]
+    # load_balancer_type = "application"
+    security_groups = [aws_security_group.lb-sg.id]
 
-resource "aws_lb" "test" {
-  name               = "test-lb-tf"
-#   internal           = false
-  load_balancer_type = "network"
-#   subnets            = [aws_subnet.eip-sub.id]
+
+  # subnet_mapping {
+  #   allocation_id = aws_eip.eip-server.id
+  # }
 
 
-  subnet_mapping {
-    subnet_id     = aws_subnet.eip-sub.id
-    allocation_id = aws_eip.eip-server.id
-  }
 
-#   enable_deletion_protection = true
+    listener {
+        instance_port     = 3000
+        instance_protocol = "tcp"
+        lb_port           = 80
+        lb_protocol = "tcp"
+  
+    }
 
-  tags = var.additional_tags
+    health_check {
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 3
+        target              = "HTTP:3000/"
+        interval            = 30
+    }
+
+    instances                   = [aws_instance.eip-server.id]
+    cross_zone_load_balancing   = true
 
 }
 
 
-output "elastic_ip" {
-  value = aws_eip.eip-server.public_ip
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# resource "aws_lb" "test" {
+#   name               = "test-lb-tf"
+# #   internal           = false
+#   load_balancer_type = "network"
+# #   subnets            = [aws_subnet.eip-sub.id]
+
+
+#   subnet_mapping {
+#     subnet_id     = aws_subnet.eip-sub.id
+#     allocation_id = aws_eip.eip-server.id
+#   }
+
+# #   enable_deletion_protection = true
+
+#   tags = var.additional_tags
+
+# }
+
+
+# output "elastic_ip" {
+#   value = aws_eip.eip-server.public_ip
+# }
 
 
 # output "python-server" {
