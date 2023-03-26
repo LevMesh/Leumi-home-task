@@ -52,6 +52,7 @@ pipeline {
       
         stage ('Stage 4 - Entering the production server') {
             steps {
+                sh "sed -i 's/latest\|test/${env.VERSION}/' deployment.yaml"
                 sh "sed -i 's/TAG-HERE\|test/${env.VERSION}/' production.sh"
                 sh "./production.sh"
                 
