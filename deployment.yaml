@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata: ## metadata for the Deployment
+  name: deployment-myapp
+  labels:
+    app: myapp
+    type: front-end
+
+spec: ## replica set
+  template: 
+    metadata: ## metadata for the pods
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: front-end
+    spec: ## pod definition 
+      containers:
+      - name: python-app
+        image: levvv/python-app:latest
+  replicas: 2
+  ### Difference from replication controller to replica set - replica set has selector which can
+  ### manage pods which is was not created in this file. 
+  ### for example - if we have pods with the "type: front-end" it will affect the changes
+  ### to that pod, which mean it will mount this replica set for the running pods too.
+  selector: 
+    matchLabels:
+      type: front-end
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-svc
+spec:
+  type: NodePort
+  selector:
+     app: myapp
+     type: front-end
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000

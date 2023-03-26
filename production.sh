@@ -1,11 +1,11 @@
 #!/bin/bash
 
-ssh ubuntu@3.17.174.1 << EOF
+scp -P 22 deployment.yaml ubuntu@18.216.32.68:~
 
+ssh ubuntu@18.216.32.68 << EOF
 
     minikube start
-    rm -f Leumi 2> /dev/null
-    git clone https://github.com/LevMesh/Leumi.git
+    docker pull levvv/python-app:1.5.8
     kubectl apply -f Leumi/deployment.yaml
     kubectl port-forward svc/node-svc 8070:5000
 

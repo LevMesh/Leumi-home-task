@@ -42,17 +42,18 @@ pipeline {
                 sh "docker tag levvv/python-app:latest levvv/python-app:$env.VERSION"
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-account', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh "docker login --username=$USERNAME --password=$PASSWORD"
+                    sh "docker push levvv/python-app:latest"
                     sh "docker push levvv/python-app:$env.VERSION"
                     sh "git tag -a ${env.VERSION} -m 'version ${env.VERSION}'"
-                    sh "git push --tag"
+                    //sh "git push --tag" --> version bumping, need to give jenkins permissions to the repo for pushing the new tags.
                 }
             }
         }
       
         stage ('Stage 4 - Entering the production server') {
             steps {
-                
-                println "I'm here"
+                sh "sed -i 's/TAG-HERE\|test/${env.VERSION}/' production.sh"
+                sh "./production.sh"
                 
             }
         }
@@ -64,12 +65,13 @@ pipeline {
       sh 'docker rm -f python-app'
       sh "docker rmi levvv/python-app:latest"
 
-      sh 'docker rmi $(docker images -f dangling=true -q)' /// deleting all "<none>" docker images.
       sh "docker rmi levvv/python-app:$env.VERSION"
       cleanWs() /// Cleaning the directory which managing all the CI process.
       
     }
-}
+  }
 }
 
 
+
+    //   sh 'docker rmi $(docker images -f dangling=true -q)' /// deleting all "<none>" docker images.
